@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp">
+
+    <!-- AI 头像 -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_ai_avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="#E0E0E0"
+        android:scaleType="centerInside"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@android:drawable/ic_dialog_info" />
+
+    <!-- 气泡容器 (包含：思考、文本、分割线、按钮组) -->
+    <!-- 背景移动到这里 -->
+    <LinearLayout
+        android:id="@+id/layout_bubble_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_message_ai"
+        android:orientation="vertical"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/iv_ai_avatar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="420dp">
+
+        <!-- 深度思考内容 (默认折叠/隐藏) -->
+        <TextView
+            android:id="@+id/tv_reasoning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#F5F5F5"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:text="正在深度思考..."
+            android:textColor="#757575"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:visibility="gone" />
+
+        <!-- 消息内容 -->
+        <!-- 去掉了背景，因为父容器已经有了 -->
+        <TextView
+            android:id="@+id/tv_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
+            android:paddingStart="12dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="10dp"
+            android:text="你好！我是你的 AI 助手。有什么我可以帮你的吗？"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            tools:ignore="HardcodedText" />
+
+        <!-- 分割线 -->
+        <View
+            android:id="@+id/v_divider"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="#E0E0E0" />
+
+        <!-- 底部操作栏 (复制、点赞、收藏) -->
+        <LinearLayout
+            android:id="@+id/layout_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="6dp">
+
+            <!-- 复制按钮 -->
+            <ImageView
+                android:id="@+id/iv_copy"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:src="@drawable/ic_copy" />
+
+            <!-- 收藏按钮 -->
+            <ImageView
+                android:id="@+id/iv_collect"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:src="@drawable/ic_bookmark" />
+
+            <!-- 点赞按钮 -->
+            <ImageView
+                android:id="@+id/iv_like"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:src="@drawable/ic_thumb_up" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
