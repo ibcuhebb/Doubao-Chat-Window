@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -50,4 +51,22 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // 1. 网络请求库 (Retrofit + OkHttp)
+    // 用于调用豆包/DeepSeek API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // 自动把 JSON 转成对象
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // 用于在 Logcat 查看网络日志
+
+    // 2. 本地数据库 (Room)
+    // 用于存储聊天记录
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion") // 支持协程
+    kapt("androidx.room:room-compiler:$roomVersion")      // 编译器 (注意这里是 kapt)
+
+    // 3. JSON 解析库 (Gson)
+    // 单独引入 Gson，方便手动解析一些复杂数据
+    implementation("com.google.code.gson:gson:2.10.1")
 }

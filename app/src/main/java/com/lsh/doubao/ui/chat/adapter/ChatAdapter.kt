@@ -65,7 +65,8 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageDiffCal
         private val ivCollect: ImageView = itemView.findViewById(R.id.iv_collect)
 
         fun bind(message: Message) {
-            tvContent.text = message.content
+            val cleanContent = message.content.replace(Regex("<think>[\\s\\S]*?</think>"), "").trim()
+            tvContent.text = cleanContent
 
             // 处理深度思考内容显示
             if (!message.reasoningContent.isNullOrEmpty()) {

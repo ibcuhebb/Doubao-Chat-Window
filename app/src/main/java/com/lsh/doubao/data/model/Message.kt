@@ -1,5 +1,7 @@
 package com.lsh.doubao.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.util.UUID
 
 /**
@@ -9,33 +11,28 @@ import java.util.UUID
  * 为了适配 Android UI 展示和 Room 数据库存储，我们将 API 中复杂的嵌套结构
  * 简化为扁平的字段。
  */
+@Entity(tableName = "messages")
 data class Message(
     // 唯一标识符，用于 DiffUtil 对比和数据库主键
+    @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
 
     // 消息角色 (user / assistant)
-    // 用于在构建"记忆"上下文时告诉 API 这句话是谁说的
     val role: MessageRole,
 
     // 消息正文内容
-    // 对应 API 响应中的 content -> type="output_text" -> text
-    // 或 API 请求中的 content -> type="input_text" -> text
     var content: String = "",
 
     // 深度思考/推理内容
-    // 对应 API 响应中的 type="reasoning" -> summary -> text
-    // 仿豆包 UI 时，这部分内容通常显示在折叠框里
     var reasoningContent: String? = null,
 
-    // 图片 URL (可选)
-    // 对应 API 请求中的 content -> type="input_image" -> image_url
+    // 图片 URL
     val imageUrl: String? = null,
 
-    // 消息时间戳 (用于 UI 排序和显示时间)
+    // 消息时间戳
     val timestamp: Long = System.currentTimeMillis(),
 
     // 消息状态 (用于 UI 显示 loading 动画或重发按钮)
-    // 本地字段，不需要发送给 API
     var status: MessageStatus = MessageStatus.SENDING
 )
 
@@ -45,7 +42,7 @@ data class Message(
 enum class MessageRole(val apiValue: String) {
     USER("user"),          // 用户
     ASSISTANT("assistant"), // AI
-    SYSTEM("system");      // 系统预设 (可选，用于设置 AI 人设)
+    SYSTEM("system");      // 系统预设
 
     companion object {
         // 辅助方法：从 API 字符串转回枚举

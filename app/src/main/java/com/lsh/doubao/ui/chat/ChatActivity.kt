@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -16,11 +15,26 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lsh.doubao.R
 import com.lsh.doubao.ui.chat.adapter.ChatAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.lsh.doubao.data.local.AppDatabase
+import com.lsh.doubao.data.remote.RetrofitClient
+import com.lsh.doubao.data.repository.ChatRepository
 import kotlinx.coroutines.launch
 
 class ChatActivity : AppCompatActivity() {
 
-    private val viewModel: ChatViewModel by viewModels()
+    // 使用工厂模式初始化 ViewModel
+    private val viewModel: ChatViewModel by viewModels {
+        // 1. 获取数据库实例
+        val database = AppDatabase.getDatabase(applicationContext)
+        // 2. 获取 Dao
+        val messageDao = database.messageDao()
+        // 3. 获取网络服务
+        val apiService = RetrofitClient.apiService
+        // 4. 创建 Repository
+        val repository = ChatRepository(apiService, messageDao)
+        // 5. 传递给 Factory
+        ChatViewModel.Factory(repository)
+    }
     private lateinit var adapter: ChatAdapter
 
     // UI 组件引用
