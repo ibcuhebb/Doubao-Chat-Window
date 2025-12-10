@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +20,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -69,4 +75,7 @@ dependencies {
     // 3. JSON 解析库 (Gson)
     // 单独引入 Gson，方便手动解析一些复杂数据
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // 4. 引入mlc4j模块
+    implementation(project(":mlc4j"))
 }

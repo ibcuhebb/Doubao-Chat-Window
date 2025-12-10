@@ -7,7 +7,6 @@
     android:background="#F7F8FA"
     tools:context=".ui.chat.ChatActivity">
 
-    <!-- 1. 顶部标题栏 -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_header"
         android:layout_width="match_parent"
@@ -27,7 +26,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#000000" />
 
-        <!-- 标题区域：改为垂直线性布局，包含主标题和副标题 -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -69,8 +67,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- 2. 聊天列表 -->
-    <!-- 背景设为浅灰，突出中间气泡和底部卡片 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_chat_list"
         android:layout_width="0dp"
@@ -83,7 +79,6 @@
         app:layout_constraintTop_toBottomOf="@id/layout_header"
         tools:listitem="@layout/item_message_ai" />
 
-    <!-- 3. 底部悬浮输入区域 (修改为 CardView) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/card_input_container"
         android:layout_width="match_parent"
@@ -98,102 +93,137 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- 内部布局保持 ConstraintLayout 以便管理子View位置 -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layout_input_inner"
+        <LinearLayout
+            android:id="@+id/layout_input_wrapper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingTop="8dp"
             android:paddingEnd="12dp"
             android:paddingBottom="8dp">
 
-            <!-- 左侧相机图标 -->
-            <ImageView
-                android:id="@+id/iv_camera"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="4dp"
-                android:src="@android:drawable/ic_menu_camera"
-                app:layout_constraintBottom_toBottomOf="@id/et_input"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/et_input"
-                app:tint="#000000" />
-
-            <!-- 输入框 -->
-            <!-- 修改背景为 null，因为外层 CardView 已经是白色背景了 -->
-            <EditText
-                android:id="@+id/et_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:background="@null"
-                android:hint="发送消息或按住说话..."
-                android:maxLines="4"
-                android:minHeight="40dp"
-                android:paddingStart="8dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"
-                android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/layout_input_actions"
-                app:layout_constraintStart_toEndOf="@id/iv_camera"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- 右侧操作区 (语音+加号 OR 发送按钮) -->
-            <FrameLayout
-                android:id="@+id/layout_input_actions"
+            <LinearLayout
+                android:id="@+id/btn_model_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="@id/et_input"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/et_input">
+                android:layout_marginBottom="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="4dp">
 
-                <!-- 空闲状态显示 (Group) -->
-                <LinearLayout
-                    android:id="@+id/layout_input_idle"
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    app:tint="#2979FF" />
+
+                <TextView
+                    android:id="@+id/tv_current_model"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="visible">
+                    android:layout_marginStart="4dp"
+                    android:text="Doubao-Remote"
+                    android:textColor="#2979FF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                    <ImageView
-                        android:id="@+id/iv_voice"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:padding="4dp"
-                        android:src="@android:drawable/ic_btn_speak_now"
-                        app:tint="#000000" />
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="11dp"
+                    android:layout_marginStart="2dp"
+                    android:rotation="90"
+                    android:src="@android:drawable/ic_media_play"
+                    app:tint="#2979FF" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/iv_add"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginStart="4dp"
-                        android:padding="4dp"
-                        android:src="@android:drawable/ic_input_add"
-                        app:tint="#000000" />
-                </LinearLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/layout_input_inner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <!-- 发送状态显示 (Send Button) -->
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/btn_send"
+                <ImageView
+                    android:id="@+id/iv_camera"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:layout_constraintBottom_toBottomOf="@id/et_input"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/et_input"
+                    app:tint="#000000" />
+
+                <EditText
+                    android:id="@+id/et_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@null"
+                    android:hint="发送消息或按住说话..."
+                    android:maxLines="4"
+                    android:minHeight="40dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="8dp"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/layout_input_actions"
+                    app:layout_constraintStart_toEndOf="@id/iv_camera"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <FrameLayout
+                    android:id="@+id/layout_input_actions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:visibility="gone"
-                    app:backgroundTint="#2979FF"
-                    app:elevation="0dp"
-                    app:fabCustomSize="36dp"
-                    app:srcCompat="@android:drawable/ic_menu_send"
-                    app:tint="#FFFFFF"
-                    tools:visibility="gone" />
-            </FrameLayout>
+                    app:layout_constraintBottom_toBottomOf="@id/et_input"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/et_input">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <LinearLayout
+                        android:id="@+id/layout_input_idle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="visible">
+
+                        <ImageView
+                            android:id="@+id/iv_voice"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:padding="4dp"
+                            android:src="@android:drawable/ic_btn_speak_now"
+                            app:tint="#000000" />
+
+                        <ImageView
+                            android:id="@+id/iv_add"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="4dp"
+                            android:padding="4dp"
+                            android:src="@android:drawable/ic_input_add"
+                            app:tint="#000000" />
+                    </LinearLayout>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/btn_send"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        app:backgroundTint="#2979FF"
+                        app:elevation="0dp"
+                        app:fabCustomSize="36dp"
+                        app:srcCompat="@android:drawable/ic_menu_send"
+                        app:tint="#FFFFFF"
+                        tools:visibility="gone" />
+                </FrameLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

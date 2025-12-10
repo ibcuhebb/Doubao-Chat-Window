@@ -12,29 +12,37 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
 
-    // 将 Repository 中的 Flow (来自 Room) 转换为 UI 可观察的 StateFlow
-    // stateIn 操作符可以把冷流变成热流，确保 Activity 旋转时数据不丢失
     val messages: StateFlow<List<Message>> = repository.allMessages
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000), // App 切到后台 5秒后停止更新数据库流
+            started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    // 发送消息
-    fun sendMessage(content: String) {
+    // 修改：增加 modelId 参数
+    fun sendMessage(content: String, modelId: String) {
         if (content.isBlank()) return
 
-        // 启动协程调用 Repository
         viewModelScope.launch {
-            // 这里不需要再手动更新 UI 列表了
-            // 因为 Repository 会把消息存入数据库
-            // Room 会自动通知上面的 messages Flow 更新
-            repository.sendMessage(content)
+            // 将 modelId 传给 repository
+            repository.sendMessage(content, modelId)
         }
     }
 
-    // 定义工厂类，用于构建带参数的 ViewModel
+    fun switchModel(modelId: String, onSuccess: () -> Unit, onError: () -> Unit) {
+        if (modelId == "doubao-seed-1-6-flash-250828") {
+            onSuccess()
+            return
+        }
+
+        // Repository 现在负责线程调度，这里不需要 launch(Dispatchers.IO)
+        repository.loadModel(modelId) { success ->
+            viewModelScope.launch { // 回到主线程更新 UI
+                if (success) onSuccess() else onError()
+            }
+        }
+    }
+
     class Factory(private val repository: ChatRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
