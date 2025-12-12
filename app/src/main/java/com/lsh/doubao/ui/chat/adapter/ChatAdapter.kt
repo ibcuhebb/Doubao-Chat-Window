@@ -109,8 +109,6 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageDiffCal
         private fun animateIconChange(imageView: ImageView, successIconRes: Int, originalIconRes: Int) {
             // 切换到成功图标
             imageView.setImageResource(successIconRes)
-            // 改变颜色为绿色 (为了适配 ic_check 的颜色，如果 ic_check 本身是绿色的svg则不需要tint)
-            // 这里假设 ic_check.xml 里已经写死了绿色 fillColor="#4CAF50"
 
             // 2秒后恢复
             imageView.postDelayed({

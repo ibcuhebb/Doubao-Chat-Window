@@ -8,8 +8,7 @@ import java.util.UUID
  * 聊天消息实体类
  *
  * 对应 API 中的 message 对象。
- * 为了适配 Android UI 展示和 Room 数据库存储，我们将 API 中复杂的嵌套结构
- * 简化为扁平的字段。
+ * 为了适配 Android UI 展示和 Room 数据库存储，将 API 中复杂的嵌套结构简化为扁平的字段
  */
 @Entity(tableName = "messages")
 data class Message(
@@ -32,7 +31,7 @@ data class Message(
     // 消息时间戳
     val timestamp: Long = System.currentTimeMillis(),
 
-    // 消息状态 (用于 UI 显示 loading 动画或重发按钮)
+    // 消息状态
     var status: MessageStatus = MessageStatus.SENDING
 )
 
@@ -56,7 +55,7 @@ enum class MessageRole(val apiValue: String) {
  * 状态枚举：定义消息当前的发送状态
  */
 enum class MessageStatus {
-    SENDING, // 正在发送/正在生成 (显示转圈或打字机光标)
+    SENDING, // 正在发送/正在生成 (显示转圈)
     SUCCESS, // 发送/接收成功 (显示正常气泡)
     ERROR    // 发送失败 (显示红色感叹号)
 }

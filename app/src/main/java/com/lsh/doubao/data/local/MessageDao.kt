@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 interface MessageDao {
 
     // 获取所有消息，按时间顺序排列
-    // 返回 Flow，意味着这是一个"实时数据流"
+    // 返回 Flow，是一个实时数据流
     @Query("SELECT * FROM messages ORDER BY timestamp ASC")
     fun getAllMessages(): Flow<List<Message>>
 

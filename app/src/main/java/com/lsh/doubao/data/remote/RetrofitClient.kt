@@ -1,7 +1,6 @@
 package com.lsh.doubao.data.remote
 
 import com.lsh.doubao.data.remote.api.ChatApiService
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

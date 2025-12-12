@@ -1,6 +1,7 @@
 package com.lsh.doubao.ui.chat
 
 import android.app.AlertDialog
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -35,10 +36,8 @@ import kotlinx.coroutines.launch
 class ChatActivity : AppCompatActivity() {
 
     private val viewModel: ChatViewModel by viewModels {
-        val database = AppDatabase.getDatabase(applicationContext)
-        val messageDao = database.messageDao()
-        val apiService = RetrofitClient.apiService
-        val repository = ChatRepository(applicationContext, apiService, messageDao)
+        // 直接使用单例 getInstance
+        val repository = ChatRepository.getInstance(applicationContext)
         ChatViewModel.Factory(repository)
     }
 
@@ -112,7 +111,7 @@ class ChatActivity : AppCompatActivity() {
         uiList.add(
             ModelUiBean(
                 "doubao-seed-1-6-flash-250828",
-                "Doubao-Remote",
+                "doubao-remote",
                 false
             )
         )
@@ -140,19 +139,31 @@ class ChatActivity : AppCompatActivity() {
         rvModelList.adapter = modelAdapter
 
         // 4. 显示 Popup
-        popupWindow = PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        // 获取屏幕高度
+        val displayMetrics = resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        val screenWidth = displayMetrics.widthPixels
+
+        // 设置 Popup 高度为屏幕的 60%，宽度为 80%
+        // 这样给 RecyclerView 留出足够的滚动空间，不会被挤出屏幕
+        popupWindow = PopupWindow(contentView,
+            (screenWidth * 0.8).toInt(),
+            (screenHeight * 0.4).toInt(), // <--- 关键修改：固定高度，强制滚动
+            true
+        )
         popupWindow?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        popupWindow?.elevation = 10f
-        popupWindow?.showAsDropDown(anchorView, 0, -800) // 根据实际高度调整偏移
+        popupWindow?.elevation = 20f
+
+        // 居中显示
+        popupWindow?.showAtLocation(anchorView.rootView, android.view.Gravity.CENTER, 0, 0)
     }
 
     private fun handleModelSelection(model: ModelUiBean, localModels: List<LocalModelManager.ModelState>) {
-        // 1. 如果选中的是当前模型，直接返回
         if (currentModelId == model.id) return
 
         if (model.isLocal) {
             val modelState = localModels.find { it.modelConfig.modelId == model.id }
-            // 2. 如果模型还没下载，走原来的下载流程
+            // 如果模型还没下载，走下载流程
             if (modelState != null && !modelState.isReady()) {
                 currentModelId = model.id
                 tvCurrentModel.text = model.displayName
@@ -162,32 +173,8 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        // 3. 显示“正在加载模型...”的弹窗 (禁止用户操作)
-        val loadingDialog = AlertDialog.Builder(this)
-            .setTitle("正在加载模型")
-            .setMessage("正在初始化引擎，请稍候（首次加载可能较慢）...")
-            .setCancelable(false) // 禁止点击外部关闭
-            .create()
-        loadingDialog.show()
-
-        // 4. 调用 ViewModel 切换模型
-        viewModel.switchModel(
-            modelId = model.id,
-            onSuccess = {
-                loadingDialog.dismiss()
-                currentModelId = model.id
-                tvCurrentModel.text = model.displayName
-                // 刷新列表 UI 中的对勾
-                // (如果在 Adapter 外部持有 adapter 引用，可以在这里 notifyDataSetChanged)
-                // 比如: (rvChatList.adapter as? ModelAdapter)?.currentModelId = model.id
-
-                Toast.makeText(this, "模型加载完毕，可以对话了", Toast.LENGTH_SHORT).show()
-            },
-            onError = {
-                loadingDialog.dismiss()
-                Toast.makeText(this, "模型加载失败，请重试", Toast.LENGTH_SHORT).show()
-            }
-        )
+        // 模型已就绪（或是远端模型），直接调用我们封装好的加载函数
+        loadAndSwitchModel(model.id, model.isLocal, model.displayName)
     }
 
     // === 新增：显示下载进度弹窗 (使用 dialog_download_progress.xml) ===
@@ -203,7 +190,7 @@ class ChatActivity : AppCompatActivity() {
             .setView(dialogView)
             .setCancelable(false) // 禁止点击外部关闭，强制等待或手动暂停（暂未实现暂停按钮）
             .create()
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        //dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
 
         // 监听下载进度
@@ -233,14 +220,61 @@ class ChatActivity : AppCompatActivity() {
             }
 
             // 监听状态变化来关闭弹窗
-            modelState.initState.collect { state ->
-                if (state == com.lsh.doubao.data.model.ModelInitState.Finished) {
-                    dialog.dismiss()
-                    job.cancel()
-                    Toast.makeText(this@ChatActivity, "模型下载完成，可以对话了！", Toast.LENGTH_LONG).show()
+            lifecycleScope.launch {
+                // ... (上面的 progress 监听保持不变) ...
+
+                modelState.initState.collect { state ->
+                    // 当状态变为 Finished (下载完成)
+                    if (state == com.lsh.doubao.data.model.ModelInitState.Finished) {
+                        dialog.dismiss()
+                        // job.cancel() // 注意：这里取消 job 可能会导致 collect 提前结束，建议放在跳转后或者由生命周期管理，不过放在这里通常也行
+
+                        Toast.makeText(this@ChatActivity, "下载完成，正在加载...", Toast.LENGTH_SHORT).show()
+
+                        // === 修复点：下载完成后，自动调用加载和跳转逻辑 ===
+                        loadAndSwitchModel(
+                            modelId = modelState.modelConfig.modelId,
+                            isLocal = true,
+                            displayName = modelState.modelConfig.modelId
+                        )
+                    }
                 }
             }
         }
+    }
+
+    // === 新增：统一处理模型加载与跳转 ===
+    private fun loadAndSwitchModel(modelId: String, isLocal: Boolean, displayName: String) {
+        // 1. 显示加载弹窗
+        val loadingDialog = AlertDialog.Builder(this)
+            .setTitle(if (isLocal) "正在加载本地引擎" else "正在切换模型")
+            .setMessage(if (isLocal) "即将进入高性能对话模式..." else "请稍候...")
+            .setCancelable(false)
+            .create()
+        loadingDialog.show()
+
+        // 2. 调用 ViewModel 切换
+        viewModel.switchModel(
+            modelId = modelId,
+            onSuccess = {
+                loadingDialog.dismiss()
+                if (isLocal) {
+                    // === 如果是本地模型，跳转到第二界面 ===
+                    val intent = android.content.Intent(this, LocalChatActivity::class.java)
+                    intent.putExtra("MODEL_ID", modelId)
+                    startActivity(intent)
+                } else {
+                    // === 如果是远端模型，留在当前界面并更新 UI ===
+                    currentModelId = modelId
+                    tvCurrentModel.text = displayName
+                    Toast.makeText(this, "已切换到 $displayName", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onError = {
+                loadingDialog.dismiss()
+                Toast.makeText(this, "模型加载失败", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     private fun setupInputListener() {

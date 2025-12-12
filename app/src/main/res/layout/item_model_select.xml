@@ -15,7 +15,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:text="Doubao-Remote"
+        android:text="doubao-remote"
         android:textColor="#333333"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -27,12 +27,11 @@
         android:id="@+id/iv_check"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:src="@android:drawable/checkbox_on_background"
+        android:src="@drawable/ic_check_simple"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="#2979FF"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

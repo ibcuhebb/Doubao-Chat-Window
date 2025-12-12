@@ -3,6 +3,7 @@ import org.gradle.kotlin.dsl.implementation
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     id("kotlin-kapt")
 }
 
@@ -24,6 +25,11 @@ android {
         ndk {
             abiFilters.add("arm64-v8a")
         }
+    }
+
+    buildFeatures {
+        // 2. [新增] 开启 Compose 构建功能
+        compose = true
     }
 
     buildTypes {
@@ -78,4 +84,20 @@ dependencies {
 
     // 4. 引入mlc4j模块
     implementation(project(":mlc4j"))
+
+    // 使用 BOM 管理版本，确保所有 Compose 库版本一致
+    implementation(platform(libs.androidx.compose.bom))
+
+    // 基础 UI 组件
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+
+    // 集成 Activity 和 ViewModel
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // 调试工具 (Debug 模式下可用)
+    debugImplementation(libs.androidx.ui.tooling)
 }

@@ -12,41 +12,39 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
 
-    val messages: StateFlow<List<Message>> = repository.allMessages
+    // === 关键修改 1: 只观察远端消息 (remoteMessages) ===
+    // 因为 ChatActivity 现在只负责显示数据库里的历史记录和远端对话
+    val messages: StateFlow<List<Message>> = repository.remoteMessages
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    // 修改：增加 modelId 参数
+    // === 关键修改 2: sendMessage 只调用 sendRemoteMessage ===
     fun sendMessage(content: String, modelId: String) {
         if (content.isBlank()) return
 
+        // 注意：这里我们不再处理本地模型，因为如果用户选了本地模型，
+        // 在 handleModelSelection 里就已经跳转到 LocalChatActivity 了。
+        // 留在这里的逻辑一定是远端对话。
+
         viewModelScope.launch {
-            // 将 modelId 传给 repository
-            repository.sendMessage(content, modelId)
+            repository.sendRemoteMessage(content)
         }
     }
 
+    // 切换模型逻辑保持不变，用于下载和预加载
     fun switchModel(modelId: String, onSuccess: () -> Unit, onError: () -> Unit) {
-        if (modelId == "doubao-seed-1-6-flash-250828") {
-            onSuccess()
-            return
-        }
-
-        // Repository 现在负责线程调度，这里不需要 launch(Dispatchers.IO)
         repository.loadModel(modelId) { success ->
-            viewModelScope.launch { // 回到主线程更新 UI
-                if (success) onSuccess() else onError()
-            }
+            if (success) onSuccess() else onError()
         }
     }
 
     class Factory(private val repository: ChatRepository) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
                 return ChatViewModel(repository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")

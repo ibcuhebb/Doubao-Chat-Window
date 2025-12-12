@@ -6,7 +6,7 @@ import com.lsh.doubao.data.model.MessageStatus
 
 class Converters {
 
-    // --- Role 转换 ---
+    // Role 字段转换
     @TypeConverter
     fun fromRole(role: MessageRole): String {
         return role.name
@@ -21,7 +21,7 @@ class Converters {
         }
     }
 
-    // --- Status 转换 ---
+    // Status 字段转换
     @TypeConverter
     fun fromStatus(status: MessageStatus): String {
         return status.name

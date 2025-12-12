@@ -253,7 +253,7 @@ class LocalModelManager private constructor(private val context: Context) {
             }
         }
 
-        // --- 公开操作方法 ---
+        // 公用操作方法
 
         fun handleStart() {
             switchToDownloading()
@@ -263,7 +263,7 @@ class LocalModelManager private constructor(private val context: Context) {
             initState.value = ModelInitState.Pausing
         }
 
-        // --- 内部状态机 ---
+        // 内部状态机
 
         private fun switchToPaused() {
             initState.value = ModelInitState.Paused

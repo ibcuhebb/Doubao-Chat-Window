@@ -23,10 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "chat_database" // 数据库文件名
-                )
-                    // 实际开发中不建议允许主线程查询，但为了 Demo 简单可以暂时不开启 StrictMode
-                    // 这里我们规范一点，默认 Room 必须在后台线程操作
-                    .build()
+                ).build()
                 INSTANCE = instance
                 instance
             }

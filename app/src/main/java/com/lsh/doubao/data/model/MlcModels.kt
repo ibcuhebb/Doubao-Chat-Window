@@ -3,7 +3,6 @@ package com.lsh.doubao.data.model
 import com.google.gson.annotations.SerializedName
 import java.io.File
 import java.net.URL
-import java.util.UUID
 
 // --- 状态枚举 ---
 enum class ModelInitState {
