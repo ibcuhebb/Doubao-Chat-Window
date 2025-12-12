@@ -12,8 +12,6 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
 
-    // === 关键修改 1: 只观察远端消息 (remoteMessages) ===
-    // 因为 ChatActivity 现在只负责显示数据库里的历史记录和远端对话
     val messages: StateFlow<List<Message>> = repository.remoteMessages
         .stateIn(
             scope = viewModelScope,
@@ -21,20 +19,14 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
-    // === 关键修改 2: sendMessage 只调用 sendRemoteMessage ===
     fun sendMessage(content: String, modelId: String) {
         if (content.isBlank()) return
-
-        // 注意：这里我们不再处理本地模型，因为如果用户选了本地模型，
-        // 在 handleModelSelection 里就已经跳转到 LocalChatActivity 了。
-        // 留在这里的逻辑一定是远端对话。
-
         viewModelScope.launch {
             repository.sendRemoteMessage(content)
         }
     }
 
-    // 切换模型逻辑保持不变，用于下载和预加载
+    // 切换模型
     fun switchModel(modelId: String, onSuccess: () -> Unit, onError: () -> Unit) {
         repository.loadModel(modelId) { success ->
             if (success) onSuccess() else onError()

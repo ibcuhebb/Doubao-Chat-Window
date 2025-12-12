@@ -86,7 +86,7 @@ class ChatRepository private constructor(
         }
     }
 
-    // ... (sendLocalMessage 和 streamLocalChat 保持不变，它们已经跑在 engineDispatcher 上了) ...
+    // 本地消息发送
     suspend fun sendLocalMessage(userContent: String) {
         val userMsg = Message(id = UUID.randomUUID().toString(), role = MessageRole.USER, content = userContent, status = MessageStatus.SUCCESS)
         updateLocalList { add(userMsg) }
@@ -98,6 +98,7 @@ class ChatRepository private constructor(
         }
     }
 
+    // 更新本地模型配置
     private suspend fun updateLocalList(action: MutableList<Message>.() -> Unit) {
         stateMutex.withLock {
             localMessageList.action()
@@ -105,8 +106,8 @@ class ChatRepository private constructor(
         }
     }
 
+    // 本地对话流式生成
     private suspend fun streamLocalChat(userContent: String, aiMsgId: String) {
-        // ... (保持你之前的 streamLocalChat 代码不变) ...
         try {
             stateMutex.withLock {
                 historyMessages.add(OpenAIProtocol.ChatCompletionMessage(role = OpenAIProtocol.ChatCompletionRole.user, content = userContent))
@@ -173,10 +174,8 @@ class ChatRepository private constructor(
         }
     }
 
-    // === 关键修改：网络请求必须在 IO 线程 ===
+    // 远端对话流式生成
     private suspend fun streamRemoteChat(userContent: String, initialMsg: Message) {
-        // 这个方法现在是在 sendRemoteMessage 的 withContext(Dispatchers.IO) 作用域下调用的
-        // 所以它是安全的。但为了双重保险，我们还是可以在这里再次声明
 
         val history = messageDao.getRecentMessages(10).reversed()
         val apiMessages = history.map { msg ->

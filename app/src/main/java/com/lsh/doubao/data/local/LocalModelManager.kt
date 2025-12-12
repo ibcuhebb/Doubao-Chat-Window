@@ -63,7 +63,6 @@ class LocalModelManager private constructor(private val context: Context) {
             try {
                 context.assets.open(AppConfigFilename).bufferedReader().use { it.readText() }
             } catch (e: Exception) {
-                // 如果 assets 里没有，就用空的
                 "{ \"model_libs\": [], \"model_list\": [] }"
             }
         } else {
@@ -254,7 +253,6 @@ class LocalModelManager private constructor(private val context: Context) {
         }
 
         // 公用操作方法
-
         fun handleStart() {
             switchToDownloading()
         }
@@ -264,7 +262,6 @@ class LocalModelManager private constructor(private val context: Context) {
         }
 
         // 内部状态机
-
         private fun switchToPaused() {
             initState.value = ModelInitState.Paused
         }
@@ -319,7 +316,6 @@ class LocalModelManager private constructor(private val context: Context) {
                 if (remainingTasks.isEmpty() && downloadingTasks.isEmpty()) {
                     switchToFinished()
                 } else {
-                    // 继续下一个
                     for (nextTask in remainingTasks) {
                         if (!downloadingTasks.contains(nextTask)) {
                             startDownloadTask(nextTask)

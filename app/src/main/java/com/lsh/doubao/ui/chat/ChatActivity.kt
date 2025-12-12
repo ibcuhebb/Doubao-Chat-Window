@@ -1,7 +1,6 @@
 package com.lsh.doubao.ui.chat
 
 import android.app.AlertDialog
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -9,7 +8,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -24,9 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lsh.doubao.R
-import com.lsh.doubao.data.local.AppDatabase
 import com.lsh.doubao.data.local.engine.LocalModelManager
-import com.lsh.doubao.data.remote.RetrofitClient
 import com.lsh.doubao.data.repository.ChatRepository
 import com.lsh.doubao.ui.chat.adapter.ChatAdapter
 import com.lsh.doubao.ui.chat.adapter.ModelAdapter
@@ -78,7 +74,7 @@ class ChatActivity : AppCompatActivity() {
 
         ivBack.setOnClickListener { finish() }
 
-        // 点击打开精美的模型列表
+        // 点击打开模型列表
         btnModelSwitch.setOnClickListener { view ->
             showModelSelectionPopup(view)
         }
@@ -96,7 +92,7 @@ class ChatActivity : AppCompatActivity() {
         rvChatList.layoutManager = LinearLayoutManager(this)
     }
 
-    // === 新增：使用 Popup + RecyclerView 显示模型列表 ===
+    // 使用 Popup + RecyclerView 显示模型列表
     private fun showModelSelectionPopup(anchorView: View) {
         // 1. 加载 popup_model_list.xml
         val contentView = LayoutInflater.from(this).inflate(R.layout.popup_model_list, null)
@@ -144,11 +140,10 @@ class ChatActivity : AppCompatActivity() {
         val screenHeight = displayMetrics.heightPixels
         val screenWidth = displayMetrics.widthPixels
 
-        // 设置 Popup 高度为屏幕的 60%，宽度为 80%
-        // 这样给 RecyclerView 留出足够的滚动空间，不会被挤出屏幕
+        // 设置 Popup 高度
         popupWindow = PopupWindow(contentView,
             (screenWidth * 0.8).toInt(),
-            (screenHeight * 0.4).toInt(), // <--- 关键修改：固定高度，强制滚动
+            (screenHeight * 0.4).toInt(),
             true
         )
         popupWindow?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -177,7 +172,7 @@ class ChatActivity : AppCompatActivity() {
         loadAndSwitchModel(model.id, model.isLocal, model.displayName)
     }
 
-    // === 新增：显示下载进度弹窗 (使用 dialog_download_progress.xml) ===
+    // 显示下载进度弹窗
     private fun showDownloadProgressDialog(modelState: LocalModelManager.ModelState) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_download_progress, null)
         val tvTitle = dialogView.findViewById<TextView>(R.id.tv_progress_title)
@@ -188,20 +183,12 @@ class ChatActivity : AppCompatActivity() {
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            .setCancelable(false) // 禁止点击外部关闭，强制等待或手动暂停（暂未实现暂停按钮）
+            .setCancelable(false) // 禁止点击外部关闭，强制等待
             .create()
-        //dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
 
         // 监听下载进度
         lifecycleScope.launch {
-            // 这是一个简单的轮询或组合流监听，根据 LocalModelManager 的实现
-            // 这里假设 modelState.progress 和 total 是 StateFlow
-            // 我们组合监听它们
-
-            // 注意：因为 Kotlin Flow 合并比较繁琐，这里简化处理：开启一个循环检查或者分别监听
-            // 更优雅的方式是在 ModelState 里提供一个 computed flow (percent)
-            // 这里为了简单，我们启动一个协程每 100ms 刷新一次 UI，或者分别监听
 
             val job = launch {
                 modelState.progress.collect { current ->
@@ -221,17 +208,16 @@ class ChatActivity : AppCompatActivity() {
 
             // 监听状态变化来关闭弹窗
             lifecycleScope.launch {
-                // ... (上面的 progress 监听保持不变) ...
 
                 modelState.initState.collect { state ->
                     // 当状态变为 Finished (下载完成)
                     if (state == com.lsh.doubao.data.model.ModelInitState.Finished) {
                         dialog.dismiss()
-                        // job.cancel() // 注意：这里取消 job 可能会导致 collect 提前结束，建议放在跳转后或者由生命周期管理，不过放在这里通常也行
+                        // job.cancel()
 
                         Toast.makeText(this@ChatActivity, "下载完成，正在加载...", Toast.LENGTH_SHORT).show()
 
-                        // === 修复点：下载完成后，自动调用加载和跳转逻辑 ===
+                        // 下载完成后，自动调用加载和跳转逻辑
                         loadAndSwitchModel(
                             modelId = modelState.modelConfig.modelId,
                             isLocal = true,
@@ -243,7 +229,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    // === 新增：统一处理模型加载与跳转 ===
+    // 统一处理模型加载与跳转
     private fun loadAndSwitchModel(modelId: String, isLocal: Boolean, displayName: String) {
         // 1. 显示加载弹窗
         val loadingDialog = AlertDialog.Builder(this)
@@ -259,12 +245,12 @@ class ChatActivity : AppCompatActivity() {
             onSuccess = {
                 loadingDialog.dismiss()
                 if (isLocal) {
-                    // === 如果是本地模型，跳转到第二界面 ===
+                    // 如果是本地模型，跳转到第二界面
                     val intent = android.content.Intent(this, LocalChatActivity::class.java)
                     intent.putExtra("MODEL_ID", modelId)
                     startActivity(intent)
                 } else {
-                    // === 如果是远端模型，留在当前界面并更新 UI ===
+                    // 如果是远端模型，留在当前界面并更新UI
                     currentModelId = modelId
                     tvCurrentModel.text = displayName
                     Toast.makeText(this, "已切换到 $displayName", Toast.LENGTH_SHORT).show()

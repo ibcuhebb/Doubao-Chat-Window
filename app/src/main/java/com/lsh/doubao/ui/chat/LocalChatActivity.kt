@@ -132,7 +132,7 @@ fun LocalChatScreen(
     }
 }
 
-// === 1. 消息气泡组件 ===
+// 1. 消息气泡组件
 @Composable
 fun MessageItem(message: Message) {
     val isUser = message.role == MessageRole.USER
@@ -248,7 +248,7 @@ fun ActionIconWithText(
     }
 }
 
-// === 2. 底部输入栏  ===
+// 2. 底部输入栏
 @Composable
 fun BottomInputBar(onSendMessage: (String) -> Unit) {
     var inputText by remember { mutableStateOf("") }
@@ -269,7 +269,7 @@ fun BottomInputBar(onSendMessage: (String) -> Unit) {
                 .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // === 左侧：相机 ===
+            // 左侧：相机
             AnimatedVisibility(
                 visible = !isTyping,
                 enter = fadeIn() + expandHorizontally(),
@@ -285,7 +285,7 @@ fun BottomInputBar(onSendMessage: (String) -> Unit) {
                 }
             }
 
-            // === 中间：输入框 (灰色圆角背景) ===
+            // 中间：输入框 (灰色圆角背景)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -306,7 +306,7 @@ fun BottomInputBar(onSendMessage: (String) -> Unit) {
                 )
             }
 
-            // === 右侧：语音 & 加号 (未输入时显示) ===
+            // 右侧：语音 & 加号 (未输入时显示)
             AnimatedVisibility(
                 visible = !isTyping,
                 enter = fadeIn() + expandHorizontally(),
@@ -334,7 +334,7 @@ fun BottomInputBar(onSendMessage: (String) -> Unit) {
                 }
             }
 
-            // === 右侧：发送按钮 (输入时显示) ===
+            // 右侧：发送按钮 (输入时显示)
             AnimatedVisibility(
                 visible = isTyping,
                 enter = fadeIn() + expandHorizontally(),
